@@ -17,3 +17,6 @@ venv/
 data/
 *.tar.gz
 *.zip
+
+# Macos hide file
+.DS_Store
