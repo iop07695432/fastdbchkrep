@@ -321,8 +321,8 @@ FastDBCheckRep 提供三大核心命令：
   -import_json "data/json/(oracle-one)-hnkafka_oms_20250902.json" \
   -mdout "data/md" \
   -company_name "鼎诚科技" \
-  -user_company "海南电网" \
-  -application_name "OMS调度系统" \
+  -user_company "BAT科技公司" \
+  -application_name "核心交易系统" \
   -suptime "4" \
   -supname "张工"
 ```
@@ -334,7 +334,7 @@ FastDBCheckRep 提供三大核心命令：
   -import_json "data/json/(mysql-one)-mysql_server_20250902.json" \
   -mdout "data/md" \
   -company_name "伟宏智能" \
-  -user_company "广州银行" \
+  -user_company "太行山银行" \
   -application_name "核心业务系统"
 ```
 
@@ -342,11 +342,11 @@ FastDBCheckRep 提供三大核心命令：
 
 ```bash
 ./fastdbchkrep.sh report \
-  -import_txt "data/file/sqlserver/172.18.0.2-HealthCheck-20251023.txt" \
+  -import_txt "data/file/sqlserver/192.168.1.10-HealthCheck-20251023.txt" \
   -mdout "data/md" \
   -company_name "鼎诚科技" \
-  -user_company "海南电网" \
-  -application_name "OMS调度系统" \
+  -user_company "BAT科技公司" \
+  -application_name "核心交易系统" \
   -suptime "4" \
   -supname "王工"
 ```
@@ -443,16 +443,16 @@ data/md/
 ./fastdbchkrep.sh htmltopdf \
   -import_html "data/md/oracle/hnkafka_oms_20250902/hnkafka_oms.editable.html" \
   -pdfout "data/pdf" \
-  -pdfname "2025年第三季度_海南电网_OMS系统_ORACLE数据库巡检报告_20250902"
+  -pdfname "2025年第三季度_BAT科技公司_太行山银行_ORACLE数据库巡检报告_20250902"
 ```
 
 **示例 2：转换 SQL Server 报告为 PDF**
 
 ```bash
 ./fastdbchkrep.sh htmltopdf \
-  -import_html "data/md/sqlserver/172.18.0.2/HealthCheck.editable.html" \
+  -import_html "data/md/sqlserver/192.168.1.10/HealthCheck.editable.html" \
   -pdfout "data/pdf" \
-  -pdfname "2025年第三季度_海南电网_OMS系统_SQLSERVER数据库巡检报告_20251023"
+  -pdfname "2025年第三季度_BAT科技公司_太行山银行_SQLSERVER数据库巡检报告_20251023"
 ```
 
 #### 输出说明
@@ -538,14 +538,14 @@ fastdbchkrep/
   -import_json "data/json/(oracle-one)-hnkafka_oms_20250902.json" \
   -mdout "data/md" \
   -company_name "鼎诚科技" \
-  -user_company "海南电网" \
-  -application_name "OMS调度系统"
+  -user_company "BAT科技公司" \
+  -application_name "核心交易系统"
 
 # 步骤 3：转换为 PDF
 ./fastdbchkrep.sh htmltopdf \
   -import_html "data/md/oracle/hnkafka_oms_20250902/hnkafka_oms.editable.html" \
   -pdfout "data/pdf" \
-  -pdfname "2025年第三季度_海南电网_OMS系统_ORACLE数据库巡检报告_20250902"
+  -pdfname "2025年第三季度_BAT科技公司_太行山银行_ORACLE数据库巡检报告_20250902"
 ```
 
 ### Oracle RAC 完整流程
@@ -564,14 +564,14 @@ fastdbchkrep/
   -import_json "data/json/(oracle-rac)-rac_cluster_20250902.json" \
   -mdout "data/md" \
   -company_name "鼎诚科技" \
-  -user_company "海南电网" \
-  -application_name "OMS调度系统"
+  -user_company "BAT科技公司" \
+  -application_name "核心交易系统"
 
 # 步骤 3：转换为 PDF
 ./fastdbchkrep.sh htmltopdf \
   -import_html "data/md/oracle/rac_cluster_20250902/rac_cluster_20250902.rac.editable.html" \
   -pdfout "data/pdf" \
-  -pdfname "2025年第三季度_海南电网_OMS系统_ORACLE_RAC数据库巡检报告_20250902"
+  -pdfname "2025年第三季度_BAT科技公司_太行山银行_ORACLE_RAC数据库巡检报告_20250902"
 ```
 
 ### MySQL 完整流程
@@ -589,14 +589,14 @@ fastdbchkrep/
   -import_json "data/json/(mysql-one)-mysql_server_20250902.json" \
   -mdout "data/md" \
   -company_name "伟宏智能" \
-  -user_company "广州银行" \
+  -user_company "太行山银行" \
   -application_name "核心业务系统"
 
 # 步骤 3：转换为 PDF
 ./fastdbchkrep.sh htmltopdf \
   -import_html "data/md/mysql/mysql_server_20250902/mysql_server.editable.html" \
   -pdfout "data/pdf" \
-  -pdfname "2025年第三季度_广州银行_核心业务系统_MYSQL数据库巡检报告_20250902"
+  -pdfname "2025年第三季度_太行山银行_核心业务系统_MYSQL数据库巡检报告_20250902"
 ```
 
 ### SQL Server 完整流程
@@ -604,17 +604,17 @@ fastdbchkrep/
 ```bash
 # 步骤 1：生成报告（SQL Server 跳过 parse 步骤，直接从 TXT 生成）
 ./fastdbchkrep.sh report \
-  -import_txt "data/file/sqlserver/172.18.0.2-HealthCheck-20251023.txt" \
+  -import_txt "data/file/sqlserver/192.168.1.10-HealthCheck-20251023.txt" \
   -mdout "data/md" \
   -company_name "鼎诚科技" \
-  -user_company "海南电网" \
-  -application_name "OMS调度系统"
+  -user_company "BAT科技公司" \
+  -application_name "核心交易系统"
 
 # 步骤 2：转换为 PDF
 ./fastdbchkrep.sh htmltopdf \
-  -import_html "data/md/sqlserver/172.18.0.2/HealthCheck.editable.html" \
+  -import_html "data/md/sqlserver/192.168.1.10/HealthCheck.editable.html" \
   -pdfout "data/pdf" \
-  -pdfname "2025年第三季度_海南电网_OMS系统_SQLSERVER数据库巡检报告_20251023"
+  -pdfname "2025年第三季度_BAT科技公司_太行山银行_SQLSERVER数据库巡检报告_20251023"
 ```
 
 ---
