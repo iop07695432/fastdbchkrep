@@ -1,0 +1,20 @@
+# FastDBCheckRep项目依赖包
+# 用途：数据库巡检报告生成工具的核心依赖
+
+# 日志框架 - 用于结构化日志记录
+loguru>=0.5.0
+
+# 图表生成库 - 用于生成OS性能监控图表 (CPU/内存/磁盘IO趋势图)
+matplotlib>=3.0.0
+
+# 数值计算库 - matplotlib的底层依赖，用于图表数据处理
+numpy>=1.20.0
+
+# HTML渲染和截图库 - 用于AWR报告高质量截图
+playwright>=1.40.0
+
+# 图片处理库 - 用于AWR截图压缩优化
+Pillow>=8.0.0
+
+# Markdown转换库 - 用于将MD文档转换为HTML
+markdown>=3.4.0

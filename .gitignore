@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.pyc
+venv/
+.venv/
+.env
+
+# IDE
+.idea/
+.vscode/
+
+# Logs
+*.log
+*.log.*
+
+# Build artifacts & Data
+data/
+*.tar.gz
+*.zip
