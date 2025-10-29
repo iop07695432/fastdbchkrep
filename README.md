@@ -840,7 +840,7 @@ COMPANY_LOGO_MAPPING: Dict[str, str] = {
 
 ### 贡献方式
 
-1. Fork 本仓库
+1. Fork 本仓库：[https://github.com/iop07695432/fastdbchkrep](https://github.com/iop07695432/fastdbchkrep)
 2. 创建特性分支 (`git checkout -b feature/AmazingFeature`)
 3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
 4. 推送到分支 (`git push origin feature/AmazingFeature`)
@@ -848,7 +848,7 @@ COMPANY_LOGO_MAPPING: Dict[str, str] = {
 
 ### 代码审查标准
 
-- 遵循项目代码规范
+- 遵循项目代码规范（详见 `README.md`）
 - 添加必要的测试用例
 - 更新相关文档
 - 确保所有测试通过
@@ -859,6 +859,8 @@ COMPANY_LOGO_MAPPING: Dict[str, str] = {
 
 如有问题或建议，请通过以下方式联系：
 
+- 提交 Issue：[GitHub Issues](https://github.com/iop07695432/fastdbchkrep/issues)
+- 项目主页：[https://github.com/iop07695432/fastdbchkrep](https://github.com/iop07695432/fastdbchkrep)
 - 邮件：xzjj0420@gmail.com
 - 博客：https://www.cnblogs.com/yuzhijian
 
