@@ -859,8 +859,8 @@ COMPANY_LOGO_MAPPING: Dict[str, str] = {
 
 如有问题或建议，请通过以下方式联系：
 
-- 提交 Issue：[GitHub Issues](https://github.com/your-repo/fastdbchkrep/issues)
 - 邮件：xzjj0420@gmail.com
+- 博客：https://www.cnblogs.com/yuzhijian
 
 ---
 
