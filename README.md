@@ -196,11 +196,154 @@ markdown>=3.4.0        # Markdown 转换
 
 ---
 
+## 📦 数据采集脚本
+
+在使用 FastDBCheckRep 生成报告之前，需要先使用巡检脚本收集数据库和系统信息。`scripts/` 目录提供了针对不同数据库的数据采集脚本。
+
+### 完整工作流程
+
+```
+数据采集 → parse → report → htmltopdf
+   ↓         ↓        ↓         ↓
+ 原始文件   JSON    MD/HTML    PDF
+```
+
+### MySQL 巡检脚本
+
+**脚本路径**：`scripts/mysql/db_check/mysql_inspection.sh`
+
+**功能说明**：
+- 自动收集 MySQL 数据库和系统相关信息
+- 支持 TCP 连接和 Socket 连接两种方式
+- 需要以 root 用户执行
+- 支持单机模式（主从复制和集群模式待后续实现）
+
+**使用示例**：
+
+```bash
+# TCP 连接方式
+./scripts/mysql/db_check/mysql_inspection.sh \
+  -outdir "/tmp/mysql_check" \
+  -db_model "one" \
+  -mysql_user "root" \
+  -mysql_pass "your_password" \
+  -mysql_tcp_conn \
+  -host "192.168.1.100" \
+  -port "3306"
+
+# Socket 连接方式
+./scripts/mysql/db_check/mysql_inspection.sh \
+  -outdir "/tmp/mysql_check" \
+  -db_model "one" \
+  -mysql_user "root" \
+  -mysql_pass "your_password" \
+  -mysql_sock_conn \
+  -sock "/mysql/data/3306/mysql.sock"
+```
+
+**输出文件**：
+- 脚本会在 `-outdir` 指定的目录下生成巡检数据文件
+- 这些文件将被 `parse` 命令的 `-import_dir` 参数使用
+
+---
+
+### Oracle 巡检脚本
+
+**脚本路径**：`scripts/oracle/db_check/oracle_inspection.sh`
+
+**功能说明**：
+- 自动收集 Oracle 数据库和系统相关信息
+- 支持单机（single）和 RAC 集群模式
+- 需要以 root 用户执行
+- 支持 Oracle 11g、12c、19c 版本
+
+**使用示例**：
+
+```bash
+# 单机模式
+./scripts/oracle/db_check/oracle_inspection.sh \
+  -sid "orcl" \
+  -outdir "/tmp/oracle_check" \
+  -db_model "single"
+
+# RAC 模式（在每个节点上分别执行）
+./scripts/oracle/db_check/oracle_inspection.sh \
+  -sid "orcl" \
+  -outdir "/tmp/oracle_check_node1" \
+  -db_model "rac"
+```
+
+**参数说明**：
+- `-sid`：Oracle 数据库 SID（会自动转为小写）
+- `-outdir`：输出目录的基础路径
+- `-db_model`：数据库模式，`single`（单机）或 `rac`（RAC 集群）
+
+**输出文件**：
+- 单机模式：生成的文件用于 `parse` 命令的 `-import_dir` 参数
+- RAC 模式：每个节点的文件分别用于 `-import_dir_1`、`-import_dir_2` 等参数
+
+---
+
+### SQL Server 巡检脚本
+
+**文档路径**：`scripts/sqlserver/SQL Server 数据库自动巡检方法.md`
+
+**功能说明**：
+- 使用 SSMS 工具配合 `xp_cmdshell` 功能执行巡检
+- 适用于 SQL Server 2008 及以上版本
+- 需要 `sysadmin` 权限（建议使用 `sa` 账户）
+- 生成结构化的 TXT 格式巡检报告
+
+**使用步骤**：
+
+1. **启用 xp_cmdshell**：
+```sql
+-- 开启高级选项
+EXEC sp_configure 'show advanced options', 1;
+RECONFIGURE;
+
+-- 启用 xp_cmdshell
+EXEC sp_configure 'xp_cmdshell', 1;
+RECONFIGURE;
+```
+
+2. **上传巡检脚本**：
+   - 将 `mssql_healthcheck.sql` 上传到服务器目录（如 `D:\YZJ\`）
+
+3. **执行巡检**：
+```sql
+-- 在 SSMS 中执行
+EXEC xp_cmdshell 'sqlcmd -S localhost -U sa -P your_password -i D:\YZJ\mssql_healthcheck.sql -o D:\YZJ\HealthCheck_20251023.txt'
+```
+
+4. **关闭 xp_cmdshell**（安全考虑）：
+```sql
+EXEC sp_configure 'xp_cmdshell', 0;
+RECONFIGURE;
+```
+
+**输出文件**：
+- 生成的 TXT 文件（如 `HealthCheck_20251023.txt`）直接用于 `report` 命令的 `-import_txt` 参数
+- **注意**：SQL Server 跳过 `parse` 步骤，直接从 TXT 生成报告
+
+---
+
+### 其他辅助脚本
+
+`scripts/` 目录还包含以下辅助脚本：
+
+- **MySQL 备份脚本**：`scripts/mysql/db_backup/`
+- **Oracle 备份脚本**：`scripts/oracle/db_backup/`
+
+这些脚本用于数据库备份，不是巡检流程的一部分。
+
+---
+
 ## 📖 使用方法
 
 FastDBCheckRep 提供三大核心命令：
 
-1. **parse** - 解析原始数据生成 JSON 元数据
+1. **parse** - 解析原始数据生成 JSON 元数据（Oracle/MySQL）
 2. **report** - 生成 Markdown 和 HTML 报告
 3. **htmltopdf** - 转换 HTML 为 PDF
 
@@ -421,7 +564,23 @@ data/md/
 
 #### 用途
 
-将可编辑的 HTML 文件转换为 PDF 格式，同时支持建议章节的编辑内容保存。
+将最终版 HTML 文件转换为 PDF 格式的巡检报告。
+
+#### 工作流程说明
+
+1. **生成可编辑 HTML**：`report` 命令生成 `*.editable.html` 文件
+2. **手动填写建议**：DBA 在浏览器中打开 `*.editable.html`，填写巡检建议和结论
+3. **保存最终版本**：在浏览器中点击"保存最终版本"按钮，生成 `*.final.html` 文件
+4. **转换为 PDF**：使用 `htmltopdf` 命令将 `*.final.html` 转换为 PDF
+
+#### 两种 HTML 文件的区别
+
+| 文件类型 | 用途 | 是否可编辑 | 用于 PDF 转换 |
+|---------|------|-----------|-------------|
+| `*.editable.html` | DBA 填写巡检建议和结论 | ✅ 可编辑 | ❌ 不推荐 |
+| `*.final.html` | 最终版本，包含填写的建议 | ❌ 只读 | ✅ 推荐使用 |
+
+**说明**：虽然 `htmltopdf` 命令可以接受 `.editable.html` 文件并自动生成 `.final.html`，但推荐的工作流程是先在浏览器中填写建议并保存为 `.final.html`，然后再转换为 PDF。
 
 #### 语法
 
@@ -431,28 +590,37 @@ data/md/
 
 #### 参数说明
 
-- `-import_html <路径>` - 输入 HTML 文件路径（建议使用 `*.editable.html`）（必需）
+- `-import_html <路径>` - 输入 HTML 文件路径（**推荐使用 `*.final.html`**）（必需）
 - `-pdfout <路径>` - 输出目录路径（PDF 文件保存位置）（必需）
 - `-pdfname <名称>` - 输出文件名（不含扩展名）（必需）
 
 #### 使用示例
 
-**示例 1：转换 Oracle 报告为 PDF**
+**示例 1：转换 Oracle 报告为 PDF（推荐方式）**
 
 ```bash
 ./fastdbchkrep.sh htmltopdf \
-  -import_html "data/md/oracle/hnkafka_oms_20250902/hnkafka_oms.editable.html" \
+  -import_html "data/md/oracle/hnkafka_oms_20250902/hnkafka_oms.final.html" \
   -pdfout "data/pdf" \
-  -pdfname "2025年第三季度_BAT科技公司_太行山银行_ORACLE数据库巡检报告_20250902"
+  -pdfname "2025年第三季度_太行山银行_存贷核心交易系统_ORACLE数据库巡检报告_20250902"
 ```
 
-**示例 2：转换 SQL Server 报告为 PDF**
+**示例 2：转换 MySQL 报告为 PDF（推荐方式）**
 
 ```bash
 ./fastdbchkrep.sh htmltopdf \
-  -import_html "data/md/sqlserver/192.168.1.10/HealthCheck.editable.html" \
+  -import_html "data/md/mysql/mysql_server_20250902/mysql_server.final.html" \
   -pdfout "data/pdf" \
-  -pdfname "2025年第三季度_BAT科技公司_太行山银行_SQLSERVER数据库巡检报告_20251023"
+  -pdfname "2025年第三季度_太行山银行_核心业务系统_MYSQL数据库巡检报告_20250902"
+```
+
+**示例 3：转换 SQL Server 报告为 PDF（推荐方式）**
+
+```bash
+./fastdbchkrep.sh htmltopdf \
+  -import_html "data/md/sqlserver/192.168.1.20/HealthCheck.final.html" \
+  -pdfout "data/pdf" \
+  -pdfname "2025年第三季度_太行山银行_存贷核心交易系统_SQLSERVER数据库巡检报告_20251023"
 ```
 
 #### 输出说明
@@ -538,14 +706,18 @@ fastdbchkrep/
   -import_json "data/json/(oracle-one)-hnkafka_oms_20250902.json" \
   -mdout "data/md" \
   -company_name "鼎诚科技" \
-  -user_company "BAT科技公司" \
-  -application_name "核心交易系统"
+  -user_company "太行山银行" \
+  -application_name "存贷核心交易系统"
 
-# 步骤 3：转换为 PDF
+# 步骤 3：在浏览器中填写巡检建议
+# 打开 data/md/oracle/hnkafka_oms_20250902/hnkafka_oms.editable.html
+# 填写完成后点击"保存最终版本"按钮，生成 hnkafka_oms.final.html
+
+# 步骤 4：转换为 PDF
 ./fastdbchkrep.sh htmltopdf \
-  -import_html "data/md/oracle/hnkafka_oms_20250902/hnkafka_oms.editable.html" \
+  -import_html "data/md/oracle/hnkafka_oms_20250902/hnkafka_oms.final.html" \
   -pdfout "data/pdf" \
-  -pdfname "2025年第三季度_BAT科技公司_太行山银行_ORACLE数据库巡检报告_20250902"
+  -pdfname "2025年第三季度_太行山银行_存贷核心交易系统_ORACLE数据库巡检报告_20250902"
 ```
 
 ### Oracle RAC 完整流程
@@ -564,14 +736,18 @@ fastdbchkrep/
   -import_json "data/json/(oracle-rac)-rac_cluster_20250902.json" \
   -mdout "data/md" \
   -company_name "鼎诚科技" \
-  -user_company "BAT科技公司" \
-  -application_name "核心交易系统"
+  -user_company "太行山银行" \
+  -application_name "存贷核心交易系统"
 
-# 步骤 3：转换为 PDF
+# 步骤 3：在浏览器中填写巡检建议
+# 打开 data/md/oracle/rac_cluster_20250902/rac_cluster_20250902.rac.editable.html
+# 填写完成后点击"保存最终版本"按钮，生成 rac_cluster_20250902.rac.final.html
+
+# 步骤 4：转换为 PDF
 ./fastdbchkrep.sh htmltopdf \
-  -import_html "data/md/oracle/rac_cluster_20250902/rac_cluster_20250902.rac.editable.html" \
+  -import_html "data/md/oracle/rac_cluster_20250902/rac_cluster_20250902.rac.final.html" \
   -pdfout "data/pdf" \
-  -pdfname "2025年第三季度_BAT科技公司_太行山银行_ORACLE_RAC数据库巡检报告_20250902"
+  -pdfname "2025年第三季度_太行山银行_存贷核心交易系统_ORACLE_RAC数据库巡检报告_20250902"
 ```
 
 ### MySQL 完整流程
@@ -592,9 +768,13 @@ fastdbchkrep/
   -user_company "太行山银行" \
   -application_name "核心业务系统"
 
-# 步骤 3：转换为 PDF
+# 步骤 3：在浏览器中填写巡检建议
+# 打开 data/md/mysql/mysql_server_20250902/mysql_server.editable.html
+# 填写完成后点击"保存最终版本"按钮，生成 mysql_server.final.html
+
+# 步骤 4：转换为 PDF
 ./fastdbchkrep.sh htmltopdf \
-  -import_html "data/md/mysql/mysql_server_20250902/mysql_server.editable.html" \
+  -import_html "data/md/mysql/mysql_server_20250902/mysql_server.final.html" \
   -pdfout "data/pdf" \
   -pdfname "2025年第三季度_太行山银行_核心业务系统_MYSQL数据库巡检报告_20250902"
 ```
@@ -604,17 +784,21 @@ fastdbchkrep/
 ```bash
 # 步骤 1：生成报告（SQL Server 跳过 parse 步骤，直接从 TXT 生成）
 ./fastdbchkrep.sh report \
-  -import_txt "data/file/sqlserver/192.168.1.10-HealthCheck-20251023.txt" \
+  -import_txt "data/file/sqlserver/192.168.1.20-HealthCheck-20251023.txt" \
   -mdout "data/md" \
   -company_name "鼎诚科技" \
-  -user_company "BAT科技公司" \
-  -application_name "核心交易系统"
+  -user_company "太行山银行" \
+  -application_name "存贷核心交易系统"
 
-# 步骤 2：转换为 PDF
+# 步骤 2：在浏览器中填写巡检建议
+# 打开 data/md/sqlserver/192.168.1.20/HealthCheck.editable.html
+# 填写完成后点击"保存最终版本"按钮，生成 HealthCheck.final.html
+
+# 步骤 3：转换为 PDF
 ./fastdbchkrep.sh htmltopdf \
-  -import_html "data/md/sqlserver/192.168.1.10/HealthCheck.editable.html" \
+  -import_html "data/md/sqlserver/192.168.1.20/HealthCheck.final.html" \
   -pdfout "data/pdf" \
-  -pdfname "2025年第三季度_BAT科技公司_太行山银行_SQLSERVER数据库巡检报告_20251023"
+  -pdfname "2025年第三季度_太行山银行_存贷核心交易系统_SQLSERVER数据库巡检报告_20251023"
 ```
 
 ---
